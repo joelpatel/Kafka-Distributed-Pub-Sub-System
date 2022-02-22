@@ -1,0 +1,150 @@
+version: "3"
+services:
+  api-db:
+    build: 
+      context: ./api-db
+      dockerfile: Dockerfile
+    container_name: api-db
+    ports:
+      - "5000:5000"
+    networks:
+      - kafka-network
+    depends_on:
+      - mongo
+
+
+  react-app:
+    stdin_open: true
+    networks:
+      - kafka-network
+    ports:
+      - 3000:3000
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-app
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+      - producer
+      - web-proxy
+
+  producer:
+    networks:
+      - kafka-network
+    build:
+      context: ./publisher
+      dockerfile: Dockerfile
+    container_name: producer
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+      - mongo
+
+  web-proxy:
+    networks:
+      - kafka-network
+    ports:
+      - 33334:33334
+    build: 
+      context: ./middleware
+      dockerfile: Dockerfile
+    container_name: web-proxy
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+      - producer
+
+
+
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.1.4
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-network
+
+  kafka1:
+    image: confluentinc/cp-kafka:5.1.4
+    container_name: kafka1
+    ports:
+      - 29092:29092
+      - 29093:29093
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29092,INTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:9092,EXTERNAL_SAME_HOST://kafka1:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka-network
+
+  kafka2:
+    image: confluentinc/cp-kafka:5.1.4
+    container_name: kafka2
+    ports:
+      - 29102:29102
+      - 29103:29103
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29102,INTERNAL://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:9093,EXTERNAL_SAME_HOST://kafka2:29102
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka-network
+
+  kafka3:
+    image: confluentinc/cp-kafka:5.1.4
+    container_name: kafka3
+    ports:
+      - 29132:29132
+      - 29133:29133
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29132,INTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka3:9094,EXTERNAL_SAME_HOST://kafka3:29132
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka-network
+  
+  mongo:
+    image: mongo:3.6.19-xenial
+    ports:
+      - "27017:27017"
+    networks:
+      - kafka-network
+    volumes:
+      - project2:/data/db
+
+networks:
+  mern-app:
+    driver: bridge
+  kafka-network:
+    driver: bridge
+    name: kafka-network
+volumes:
+  project2:
+    driver: local

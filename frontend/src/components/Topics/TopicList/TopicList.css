@@ -1,0 +1,7 @@
+.topic__list {
+  width: 42rem;
+  max-width: 90%;
+  margin: 2rem auto;
+  list-style: none;
+  padding: 1rem;
+}
