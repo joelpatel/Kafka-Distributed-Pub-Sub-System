@@ -1,7 +1,7 @@
 version: "3"
 services:
   api-db:
-    build: 
+    build:
       context: ./api-db
       dockerfile: Dockerfile
     container_name: api-db
@@ -12,14 +12,13 @@ services:
     depends_on:
       - mongo
 
-
   react-app:
     stdin_open: true
     networks:
       - kafka-network
     ports:
       - 3000:3000
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: react-app
@@ -48,7 +47,7 @@ services:
       - kafka-network
     ports:
       - 33334:33334
-    build: 
+    build:
       context: ./middleware
       dockerfile: Dockerfile
     container_name: web-proxy
@@ -58,16 +57,13 @@ services:
       - kafka3
       - producer
 
-
-
-
   zookeeper:
     image: confluentinc/cp-zookeeper:5.1.4
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-      
+
     ports:
       - "2181:2181"
     networks:
@@ -85,6 +81,9 @@ services:
       KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29092,INTERNAL://:9092
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:9092,EXTERNAL_SAME_HOST://kafka1:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      # KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29092,EXTERNAL_DIFFERENT_HOST://:29093,INTERNAL://:9092
+      # KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:9092,EXTERNAL_SAME_HOST://kafka1:29092,EXTERNAL_DIFFERENT_HOST://<<your_device_ip_address>>:29093
+      # KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT,EXTERNAL_DIFFERENT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     depends_on:
@@ -104,6 +103,9 @@ services:
       KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29102,INTERNAL://:9093
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:9093,EXTERNAL_SAME_HOST://kafka2:29102
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      # KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29102,EXTERNAL_DIFFERENT_HOST://:29103,INTERNAL://:9093
+      # KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:9093,EXTERNAL_SAME_HOST://kafka2:29102,EXTERNAL_DIFFERENT_HOST://<<your_device_ip_address>>:29103
+      # KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT,EXTERNAL_DIFFERENT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     depends_on:
@@ -123,13 +125,16 @@ services:
       KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29132,INTERNAL://:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka3:9094,EXTERNAL_SAME_HOST://kafka3:29132
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      # KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29132,EXTERNAL_DIFFERENT_HOST://:29133,INTERNAL://:9094
+      # KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka3:9094,EXTERNAL_SAME_HOST://kafka3:29132,EXTERNAL_DIFFERENT_HOST://<<your_device_ip_address>>:29133
+      # KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT,EXTERNAL_DIFFERENT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     depends_on:
       - zookeeper
     networks:
       - kafka-network
-  
+
   mongo:
     image: mongo:3.6.19-xenial
     ports:
