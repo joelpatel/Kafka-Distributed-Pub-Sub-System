@@ -1,5 +1,7 @@
 # Kafka Distributed Pub/Sub System
 
+Video Demo Link: https://drive.google.com/file/d/1wszPMIhKcZNMsZZeLo8mX3hyNiTKZ313/view
+
 For more detailed docs, please read Documentation.pdf file attached with this submission.
 
 APIs used for this phase are ( along with API keys ):
